@@ -24,10 +24,12 @@ vi.mock('@/hooks/use-auth', () => ({
 
 const mockCreateMeeting = vi.fn()
 const mockGetRooms = vi.fn()
+const mockGetUsers = vi.fn()
 
 vi.mock('@/services/api', () => ({
   createMeeting: (...args: unknown[]) => mockCreateMeeting(...args),
   getRooms: (...args: unknown[]) => mockGetRooms(...args),
+  getUsers: (...args: unknown[]) => mockGetUsers(...args),
 }))
 
 const mockRooms = [
@@ -39,6 +41,7 @@ describe('CreateMeetingPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockGetRooms.mockResolvedValue(mockRooms)
+    mockGetUsers.mockResolvedValue([])
   })
 
   it('renders form fields', async () => {

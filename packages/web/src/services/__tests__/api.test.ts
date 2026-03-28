@@ -216,7 +216,7 @@ describe('api client', () => {
   })
 
   describe('updateMeeting', () => {
-    it('PATCHes with auth header', async () => {
+    it('PUTs with auth header', async () => {
       localStorage.setItem('token', 'tok')
       const payload = { data: { id: 'm1', title: 'Updated' } }
       mockFetch.mockResolvedValue(jsonResponse(payload))
@@ -224,7 +224,7 @@ describe('api client', () => {
       const result = await updateMeeting('m1', { title: 'Updated' })
 
       expect(mockFetch).toHaveBeenCalledWith('/api/meetings/m1', {
-        method: 'PATCH',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: 'Bearer tok',

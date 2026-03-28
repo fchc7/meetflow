@@ -11,12 +11,34 @@ export function createRoomRoutes(db: BetterSQLite3Database<typeof schema>) {
   const router = new Hono()
 
   router.get('/', (c) => {
-    const page = Number(c.req.query('page') || 1)
-    const limit = Number(c.req.query('limit') || 20)
+    const page = Math.max(Number(c.req.query('page') || 1), 1)
+    const limit = Math.max(Number(c.req.query('limit') || 20), 1)
     const offset = (page - 1) * limit
+    const available = c.req.query('available') === 'true'
+    const date = c.req.query('date')
 
-    const result = db.select().from(rooms).limit(limit).offset(offset).all()
-    const total = db.select({ value: count() }).from(rooms).get()?.value ?? 0
+    let result = db.select().from(rooms).all()
+
+    if (available && date) {
+      const dayStart = `${date}T00:00:00.000Z`
+      const dayEnd = `${date}T23:59:59.999Z`
+      const busyRoomIds = new Set(
+        db.select({ roomId: meetings.roomId })
+          .from(meetings)
+          .where(and(
+            gte(meetings.startTime, dayStart),
+            lt(meetings.startTime, dayEnd),
+            eq(meetings.status, 'scheduled'),
+          ))
+          .all()
+          .map((meeting) => meeting.roomId),
+      )
+
+      result = result.filter((room) => !busyRoomIds.has(room.id))
+    }
+
+    const total = result.length
+    result = result.slice(offset, offset + limit)
 
     return c.json({ data: result, pagination: { page, limit, total } })
   })

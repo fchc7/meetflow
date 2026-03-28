@@ -1,67 +1,96 @@
-import { useState, type FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router'
+import { useEffect, useState, type FormEvent } from 'react'
+import { Link, useNavigate } from 'react-router'
+import { ArrowRight, KeyRound } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { AuthShell } from '@/components/auth-shell'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { useAuth } from '@/hooks/use-auth'
 
 export function LoginPage() {
   const { login, isAuthenticated } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/')
+    }
+  }, [isAuthenticated, navigate])
+
   if (isAuthenticated) {
-    navigate('/')
     return null
   }
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault()
     setError('')
+
     try {
       await login(email, password)
       navigate('/')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+      setError(err instanceof Error ? err.message : t('login.errorFallback'))
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 p-6">
-        <h1 className="text-2xl font-bold text-center">Log In</h1>
+    <AuthShell
+      caption={t('login.caption')}
+      title={t('login.title')}
+      description={t('login.description')}
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <div className="p-3 text-sm text-red-600 bg-red-50 rounded">{error}</div>
+          <div className="rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            {error}
+          </div>
         )}
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>
-          <input
+
+        <div className="space-y-2">
+          <Label htmlFor="email">{t('login.email')}</Label>
+          <Input
             id="email"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder={t('login.emailPlaceholder')}
             required
-            className="w-full border rounded px-3 py-2"
           />
         </div>
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-1">Password</label>
-          <input
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">{t('login.password')}</Label>
+            <span className="text-xs text-muted-foreground">{t('login.passwordHint')}</span>
+          </div>
+          <Input
             id="password"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder={t('login.passwordPlaceholder')}
             required
-            className="w-full border rounded px-3 py-2"
           />
         </div>
-        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
-          Log In
-        </button>
-        <p className="text-center text-sm">
-          Don&apos;t have an account?{' '}
-          <Link to="/register" className="text-blue-600 underline">Register</Link>
-        </p>
+
+        <Button type="submit" className="w-full gap-2">
+          <KeyRound className="h-4 w-4" />
+          {t('login.submit')}
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+
+        <div className="flex items-center justify-between border-t border-border/60 pt-4 text-sm text-muted-foreground">
+          <span>{t('login.registerPrompt')}</span>
+          <Link to="/register" className="font-medium text-primary hover:text-primary/80">
+            {t('login.registerLink')}
+          </Link>
+        </div>
       </form>
-    </div>
+    </AuthShell>
   )
 }

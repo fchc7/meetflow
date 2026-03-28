@@ -1,15 +1,18 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { Hono } from 'hono'
 import { SignJWT } from 'jose'
+import { eq } from 'drizzle-orm'
 import { createTestDb } from '../../db/index.js'
 import { createAuthRoutes } from '../auth.routes.js'
 import { authMiddleware } from '../../middleware/auth.js'
+import { users } from '../../db/schema.js'
 
 describe('POST /register', () => {
   let app: Hono
+  let db: ReturnType<typeof createTestDb>
 
   beforeEach(() => {
-    const db = createTestDb()
+    db = createTestDb()
     app = new Hono()
     app.route('/', createAuthRoutes(db))
   })
@@ -33,6 +36,9 @@ describe('POST /register', () => {
     expect(body.data.user).not.toHaveProperty('passwordHash')
     expect(body.data.token).toBeDefined()
     expect(typeof body.data.token).toBe('string')
+
+    const stored = db.select().from(users).where(eq(users.email, 'test@example.com')).get()
+    expect(stored?.passwordHash).toMatch(/^\$2[aby]\$/)
   })
 
   it('should return 400 if email is missing', async () => {
@@ -103,9 +109,10 @@ describe('POST /register', () => {
 
 describe('POST /login', () => {
   let app: Hono
+  let db: ReturnType<typeof createTestDb>
 
   beforeEach(async () => {
-    const db = createTestDb()
+    db = createTestDb()
     app = new Hono()
     app.route('/', createAuthRoutes(db))
 

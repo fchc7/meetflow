@@ -1,6 +1,7 @@
 import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 import Database from 'better-sqlite3'
 import * as schema from './schema.js'
+import { runMigrations } from './migrate.js'
 
 type DrizzleDb = BetterSQLite3Database<typeof schema>
 
@@ -9,6 +10,9 @@ export function createDb(filename?: string): { db: DrizzleDb; sqlite: Database.D
     ? new Database(':memory:')
     : new Database(filename)
   const db = drizzle(sqlite, { schema })
+  if (filename && filename !== ':memory:') {
+    runMigrations(db)
+  }
   return { db, sqlite }
 }
 
@@ -41,6 +45,8 @@ export function createTestDb() {
       room_id TEXT NOT NULL REFERENCES rooms(id),
       host_id TEXT NOT NULL REFERENCES users(id),
       recurrence TEXT NOT NULL DEFAULT 'none',
+      recurrence_ends_at TEXT,
+      series_id TEXT,
       status TEXT NOT NULL DEFAULT 'scheduled',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
@@ -65,6 +71,7 @@ export function createTestDb() {
       meeting_id TEXT NOT NULL REFERENCES meetings(id),
       file_name TEXT NOT NULL,
       file_size INTEGER NOT NULL,
+      mime_type TEXT,
       url TEXT NOT NULL,
       uploaded_at TEXT NOT NULL
     );

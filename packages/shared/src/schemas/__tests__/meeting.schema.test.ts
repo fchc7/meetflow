@@ -11,6 +11,8 @@ const validMeeting = {
   roomId: '660e8400-e29b-41d4-a716-446655440000',
   hostId: '770e8400-e29b-41d4-a716-446655440000',
   recurrence: 'none' as const,
+  recurrenceEndsAt: null,
+  seriesId: null,
   status: 'scheduled' as const,
   createdAt: '2024-01-14T08:00:00Z',
   updatedAt: '2024-01-14T08:00:00Z',
@@ -130,6 +132,16 @@ describe('meetingSchema', () => {
     expect(meetingSchema.safeParse(rest).success).toBe(true)
   })
 
+  it('allows recurrenceEndsAt to be omitted', () => {
+    const { recurrenceEndsAt, ...rest } = validMeeting
+    expect(meetingSchema.safeParse(rest).success).toBe(true)
+  })
+
+  it('allows seriesId to be omitted', () => {
+    const { seriesId, ...rest } = validMeeting
+    expect(meetingSchema.safeParse(rest).success).toBe(true)
+  })
+
   it('rejects description exceeding 2000 chars', () => {
     expect(meetingSchema.safeParse({ ...validMeeting, description: 'x'.repeat(2001) }).success).toBe(false)
   })
@@ -158,8 +170,8 @@ describe('createMeetingSchema', () => {
     }
   })
 
-  it('rejects empty participantIds array', () => {
-    expect(createMeetingSchema.safeParse({ ...validInput, participantIds: [] }).success).toBe(false)
+  it('accepts empty participantIds array', () => {
+    expect(createMeetingSchema.safeParse({ ...validInput, participantIds: [] }).success).toBe(true)
   })
 
   it('rejects invalid UUID in participantIds', () => {
@@ -177,9 +189,13 @@ describe('createMeetingSchema', () => {
     expect(createMeetingSchema.safeParse(input).success).toBe(true)
   })
 
-  it('rejects missing participantIds', () => {
+  it('defaults missing participantIds to an empty array', () => {
     const { participantIds, ...rest } = validInput
-    expect(createMeetingSchema.safeParse(rest).success).toBe(false)
+    const result = createMeetingSchema.safeParse(rest)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.participantIds).toEqual([])
+    }
   })
 
   it('rejects missing title', () => {
@@ -212,6 +228,15 @@ describe('createMeetingSchema', () => {
 
   it('allows optional agenda', () => {
     const result = createMeetingSchema.safeParse({ ...validInput, agenda: 'Discuss Q1' })
+    expect(result.success).toBe(true)
+  })
+
+  it('allows optional recurrenceEndsAt', () => {
+    const result = createMeetingSchema.safeParse({
+      ...validInput,
+      recurrence: 'weekly',
+      recurrenceEndsAt: '2024-02-01T09:00:00Z',
+    })
     expect(result.success).toBe(true)
   })
 })

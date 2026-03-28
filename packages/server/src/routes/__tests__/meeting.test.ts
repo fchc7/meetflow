@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { Hono } from 'hono'
 import { SignJWT } from 'jose'
+import crypto from 'node:crypto'
 import { eq } from 'drizzle-orm'
 import { createTestDb } from '../../db/index.js'
 import { createMeetingRoutes } from '../meeting.routes.js'
-import { users, rooms, meetings, meetingParticipants } from '../../db/schema.js'
+import { users, rooms, meetings, meetingParticipants, notifications } from '../../db/schema.js'
 
 const JWT_SECRET = new TextEncoder().encode('dev-secret')
 
@@ -94,6 +95,37 @@ describe('Meeting Routes', () => {
       expect(body.data[0].status).toBe('scheduled')
     })
 
+    it('supports filtering by date for cli-friendly list views', async () => {
+      db.insert(meetings).values([
+        {
+          id: crypto.randomUUID(),
+          title: 'Today Meeting',
+          startTime: '2024-01-15T09:00:00Z',
+          endTime: '2024-01-15T10:00:00Z',
+          roomId,
+          hostId,
+          status: 'scheduled',
+          recurrence: 'none',
+        },
+        {
+          id: crypto.randomUUID(),
+          title: 'Tomorrow Meeting',
+          startTime: '2024-01-16T09:00:00Z',
+          endTime: '2024-01-16T10:00:00Z',
+          roomId,
+          hostId,
+          status: 'scheduled',
+          recurrence: 'none',
+        },
+      ]).run()
+
+      const res = await app.request('/api/meetings?date=2024-01-15')
+      expect(res.status).toBe(200)
+      const body = await res.json()
+      expect(body.data).toHaveLength(1)
+      expect(body.data[0].title).toBe('Today Meeting')
+    })
+
     it('supports pagination', async () => {
       for (let i = 0; i < 5; i++) {
         db.insert(meetings).values({
@@ -138,8 +170,13 @@ describe('Meeting Routes', () => {
       const body = await res.json()
       expect(body.data.id).toBe(mid)
       expect(body.data.title).toBe('Test')
+      expect(body.data.room).toBeDefined()
+      expect(body.data.room.id).toBe(roomId)
+      expect(body.data.room.name).toBe('Room 1')
       expect(body.data.participants).toHaveLength(1)
       expect(body.data.participants[0].userId).toBe(participantId)
+      expect(body.data.participants[0].name).toBe('Participant')
+      expect(body.data.participants[0].email).toBe('part@test.com')
     })
 
     it('returns 404 if not found', async () => {
@@ -165,6 +202,26 @@ describe('Meeting Routes', () => {
       const body = await res.json()
       expect(body.data.title).toBe('New Meeting')
       expect(body.data.id).toBeDefined()
+    })
+
+    it('allows creating a meeting without participants', async () => {
+      const res = await app.request('/api/meetings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${hostToken}` },
+        body: JSON.stringify({
+          title: 'Solo Meeting',
+          startTime: '2024-01-17T09:00:00Z',
+          endTime: '2024-01-17T10:00:00Z',
+          roomId,
+        }),
+      })
+
+      expect(res.status).toBe(201)
+      const body = await res.json()
+      expect(body.data.title).toBe('Solo Meeting')
+
+      const parts = db.select().from(meetingParticipants).where(eq(meetingParticipants.meetingId, body.data.id)).all()
+      expect(parts).toEqual([])
     })
 
     it('sets hostId to the authenticated user id', async () => {
@@ -203,6 +260,34 @@ describe('Meeting Routes', () => {
 
       const parts = db.select().from(meetingParticipants).all()
       expect(parts).toHaveLength(2)
+    })
+
+    it('creates recurring meeting instances when recurrence is enabled', async () => {
+      const res = await app.request('/api/meetings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${hostToken}` },
+        body: JSON.stringify({
+          title: 'Weekly Sync',
+          startTime: '2024-01-15T09:00:00Z',
+          endTime: '2024-01-15T10:00:00Z',
+          roomId,
+          recurrence: 'weekly',
+          recurrenceEndsAt: '2024-02-05T09:00:00Z',
+          participantIds: [participantId],
+        }),
+      })
+
+      expect(res.status).toBe(201)
+      const body = await res.json()
+
+      const seriesMeetings = db.select().from(meetings).where(eq(meetings.seriesId, body.data.id)).all()
+      expect(seriesMeetings).toHaveLength(4)
+      expect(seriesMeetings.map((meeting) => meeting.startTime)).toEqual([
+        '2024-01-15T09:00:00.000Z',
+        '2024-01-22T09:00:00.000Z',
+        '2024-01-29T09:00:00.000Z',
+        '2024-02-05T09:00:00.000Z',
+      ])
     })
 
     it('returns 409 if time conflict detected for the room', async () => {
@@ -288,6 +373,28 @@ describe('Meeting Routes', () => {
       expect(body.data.title).toBe('Updated')
     })
 
+    it('creates change notifications for participants when a meeting is updated', async () => {
+      const mid = crypto.randomUUID()
+      db.insert(meetings).values({
+        id: mid, title: 'Original', startTime: '2024-01-15T09:00:00Z', endTime: '2024-01-15T10:00:00Z',
+        roomId, hostId, status: 'scheduled', recurrence: 'none',
+      }).run()
+      db.insert(meetingParticipants).values({
+        meetingId: mid, userId: participantId, status: 'pending',
+      }).run()
+
+      const res = await app.request(`/api/meetings/${mid}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${hostToken}` },
+        body: JSON.stringify({ title: 'Updated' }),
+      })
+
+      expect(res.status).toBe(200)
+      const createdNotifications = db.select().from(notifications).where(eq(notifications.meetingId, mid)).all()
+      expect(createdNotifications).toHaveLength(1)
+      expect(createdNotifications[0].type).toBe('change')
+    })
+
     it('returns 409 if updated time conflicts with another meeting', async () => {
       const m1 = crypto.randomUUID()
       const m2 = crypto.randomUUID()
@@ -348,6 +455,27 @@ describe('Meeting Routes', () => {
       const check = db.select().from(meetings).where(eq(meetings.id, mid)).get()
       expect(check).toBeDefined()
       expect(check!.status).toBe('cancelled')
+    })
+
+    it('creates cancel notifications for participants when a meeting is cancelled', async () => {
+      const mid = crypto.randomUUID()
+      db.insert(meetings).values({
+        id: mid, title: 'Cancel', startTime: '2024-01-15T09:00:00Z', endTime: '2024-01-15T10:00:00Z',
+        roomId, hostId, status: 'scheduled', recurrence: 'none',
+      }).run()
+      db.insert(meetingParticipants).values({
+        meetingId: mid, userId: participantId, status: 'pending',
+      }).run()
+
+      const res = await app.request(`/api/meetings/${mid}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${hostToken}` },
+      })
+
+      expect(res.status).toBe(200)
+      const createdNotifications = db.select().from(notifications).where(eq(notifications.meetingId, mid)).all()
+      expect(createdNotifications).toHaveLength(1)
+      expect(createdNotifications[0].type).toBe('cancel')
     })
 
     it('returns 403 if not host or admin', async () => {

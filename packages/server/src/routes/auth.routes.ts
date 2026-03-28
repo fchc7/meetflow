@@ -5,6 +5,7 @@ import { SignJWT } from 'jose'
 import crypto from 'node:crypto'
 import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 import * as schema from '../db/schema.js'
+import { hashPassword, verifyPassword } from '../services/password.js'
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'dev-secret')
 
@@ -18,10 +19,6 @@ const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
 })
-
-function hashPassword(password: string): string {
-  return crypto.createHash('sha256').update(password).digest('hex')
-}
 
 async function signToken(userId: string, role: string): Promise<string> {
   return new SignJWT({ role })
@@ -49,7 +46,7 @@ export function createAuthRoutes(db: BetterSQLite3Database<typeof schema>) {
     }
 
     const id = crypto.randomUUID()
-    const passwordHash = hashPassword(password)
+    const passwordHash = await hashPassword(password)
 
     const user = {
       id,
@@ -83,8 +80,8 @@ export function createAuthRoutes(db: BetterSQLite3Database<typeof schema>) {
       return c.json({ error: 'Invalid credentials' }, 401)
     }
 
-    const passwordHash = hashPassword(password)
-    if (user.passwordHash !== passwordHash) {
+    const verification = await verifyPassword(password, user.passwordHash)
+    if (!verification.valid) {
       return c.json({ error: 'Invalid credentials' }, 401)
     }
 

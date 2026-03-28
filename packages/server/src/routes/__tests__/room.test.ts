@@ -77,6 +77,51 @@ describe('Room Routes', () => {
       expect(body2.pagination.page).toBe(3)
       expect(body2.pagination.total).toBe(25)
     })
+
+    it('supports filtering available rooms by date', async () => {
+      db.insert(rooms).values([
+        {
+          id: 'room-free',
+          name: 'Free Room',
+          capacity: 8,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: 'room-busy',
+          name: 'Busy Room',
+          capacity: 10,
+          createdAt: new Date().toISOString(),
+        },
+      ]).run()
+
+      db.insert(users).values({
+        id: 'user-availability',
+        name: 'Availability User',
+        email: 'availability@test.com',
+        passwordHash: 'hash',
+        role: 'admin',
+        createdAt: new Date().toISOString(),
+      }).run()
+
+      db.insert(meetings).values({
+        id: 'meeting-busy',
+        title: 'Busy Slot',
+        startTime: '2024-01-15T09:00:00.000Z',
+        endTime: '2024-01-15T10:00:00.000Z',
+        roomId: 'room-busy',
+        hostId: 'user-availability',
+        status: 'scheduled',
+        recurrence: 'none',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }).run()
+
+      const res = await app.request('/api/rooms?available=true&date=2024-01-15')
+      expect(res.status).toBe(200)
+      const body = await res.json()
+      expect(body.data).toHaveLength(1)
+      expect(body.data[0].id).toBe('room-free')
+    })
   })
 
   describe('GET /:id', () => {

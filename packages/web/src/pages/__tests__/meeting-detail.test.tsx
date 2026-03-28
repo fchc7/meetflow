@@ -13,10 +13,16 @@ vi.mock('react-router', () => ({
 
 const mockGetMeeting = vi.fn()
 const mockConfirmMeeting = vi.fn()
+const mockCancelMeeting = vi.fn()
+const mockGetUsers = vi.fn()
+const mockUpdateMeeting = vi.fn()
 
 vi.mock('@/services/api', () => ({
   getMeeting: (...args: unknown[]) => mockGetMeeting(...args),
   confirmMeeting: (...args: unknown[]) => mockConfirmMeeting(...args),
+  cancelMeeting: (...args: unknown[]) => mockCancelMeeting(...args),
+  getUsers: (...args: unknown[]) => mockGetUsers(...args),
+  updateMeeting: (...args: unknown[]) => mockUpdateMeeting(...args),
 }))
 
 const mockAuthState = {
@@ -55,6 +61,7 @@ const baseMeeting = {
 describe('MeetingDetailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockGetUsers.mockResolvedValue([])
   })
 
   it('renders meeting details', async () => {

@@ -1,51 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+    --background: 40 28% 93%;
+    --foreground: 201 22% 16%;
+    --card: 42 44% 97%;
+    --card-foreground: 201 22% 16%;
+    --popover: 42 44% 97%;
+    --popover-foreground: 201 22% 16%;
+    --primary: 174 58% 30%;
+    --primary-foreground: 42 44% 97%;
+    --secondary: 35 29% 88%;
+    --secondary-foreground: 201 22% 16%;
+    --muted: 35 24% 86%;
+    --muted-foreground: 205 11% 42%;
+    --accent: 19 50% 53%;
+    --accent-foreground: 42 44% 97%;
+    --destructive: 5 46% 50%;
+    --destructive-foreground: 42 44% 97%;
+    --border: 35 21% 77%;
+    --input: 35 24% 82%;
+    --ring: 174 58% 30%;
+    --radius: 1rem;
+    --surface: 39 39% 96%;
+    --surface-strong: 36 29% 89%;
+    --surface-quiet: 43 31% 98%;
+    --success: 155 35% 41%;
+    --warning: 35 67% 49%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --background: 203 28% 10%;
+    --foreground: 42 24% 95%;
+    --card: 202 24% 13%;
+    --card-foreground: 42 24% 95%;
+    --popover: 202 24% 13%;
+    --popover-foreground: 42 24% 95%;
+    --primary: 174 50% 56%;
+    --primary-foreground: 201 22% 16%;
+    --secondary: 203 15% 19%;
+    --secondary-foreground: 42 24% 95%;
+    --muted: 203 15% 19%;
+    --muted-foreground: 36 16% 70%;
+    --accent: 19 54% 60%;
+    --accent-foreground: 42 24% 95%;
+    --destructive: 5 52% 58%;
+    --destructive-foreground: 42 24% 95%;
+    --border: 203 14% 24%;
+    --input: 203 14% 24%;
+    --ring: 174 50% 56%;
+    --surface: 202 23% 14%;
+    --surface-strong: 203 18% 18%;
+    --surface-quiet: 204 20% 12%;
+    --success: 155 38% 50%;
+    --warning: 35 67% 56%;
   }
 }
 
@@ -53,7 +65,213 @@
   * {
     @apply border-border;
   }
+
+  html {
+    font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  }
+
+  html[lang='zh-CN'] {
+    font-family:
+      'PingFang SC',
+      'Hiragino Sans GB',
+      'Microsoft YaHei',
+      'Noto Sans SC',
+      'Source Han Sans SC',
+      'Segoe UI',
+      sans-serif;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at top left, hsl(var(--primary) / 0.16), transparent 30%),
+      radial-gradient(circle at top right, hsl(var(--accent) / 0.12), transparent 22%),
+      linear-gradient(180deg, hsl(var(--surface-quiet)) 0%, hsl(var(--background)) 38%, hsl(var(--background)) 100%);
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.18);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.03em;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  p {
+    text-wrap: pretty;
+  }
+
+  html[lang='zh-CN'] h1,
+  html[lang='zh-CN'] h2,
+  html[lang='zh-CN'] h3,
+  html[lang='zh-CN'] h4 {
+    letter-spacing: -0.01em;
+    line-height: 1.12;
+  }
+
+  html[lang='zh-CN'] p {
+    line-height: 1.8;
+  }
+
+  a,
+  button,
+  input,
+  textarea,
+  select {
+    transition:
+      color 160ms ease,
+      background-color 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      transform 160ms ease;
+  }
+}
+
+@layer components {
+  .panel {
+    background:
+      linear-gradient(180deg, hsl(var(--card) / 0.98), hsl(var(--card) / 0.9)),
+      hsl(var(--card));
+    border: 1px solid hsl(var(--border) / 0.7);
+    border-radius: 1.5rem;
+    box-shadow:
+      0 18px 50px hsl(201 22% 16% / 0.08),
+      inset 0 1px 0 hsl(0 0% 100% / 0.52);
+    backdrop-filter: blur(12px);
+  }
+
+  .panel-muted {
+    background: hsl(var(--surface) / 0.76);
+    border: 1px solid hsl(var(--border) / 0.55);
+    border-radius: 1.25rem;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--border) / 0.8);
+    background: hsl(var(--surface-quiet) / 0.9);
+    padding: 0.45rem 0.8rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  html[lang='zh-CN'] .eyebrow {
+    letter-spacing: 0.08em;
+    text-transform: none;
+  }
+
+  .mono {
+    font-family: 'IBM Plex Mono', 'SFMono-Regular', monospace;
+    letter-spacing: -0.02em;
+  }
+
+  html[lang='zh-CN'] .mono {
+    font-family:
+      'IBM Plex Mono',
+      'PingFang SC',
+      'Hiragino Sans GB',
+      'Microsoft YaHei',
+      'Noto Sans SC',
+      sans-serif;
+    letter-spacing: 0.01em;
+  }
+
+  .locale-chip {
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .locale-title {
+    text-wrap: balance;
+  }
+
+  .locale-copy {
+    max-width: 34rem;
+  }
+
+  .locale-signature {
+    letter-spacing: 0.18em;
+  }
+
+  .locale-caption {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+  }
+
+  html[lang='zh-CN'] .locale-chip {
+    letter-spacing: 0.08em;
+    text-transform: none;
+  }
+
+  html[lang='zh-CN'] .locale-title {
+    letter-spacing: -0.015em;
+    line-height: 1.08;
+  }
+
+  html[lang='zh-CN'] .locale-copy {
+    max-width: 28rem;
+    line-height: 1.85;
+  }
+
+  html[lang='zh-CN'] .locale-signature {
+    letter-spacing: 0.08em;
+  }
+
+  html[lang='zh-CN'] .locale-caption {
+    letter-spacing: 0.01em;
+  }
+
+  .field {
+    width: 100%;
+    border-radius: 1rem;
+    border: 1px solid hsl(var(--input) / 0.95);
+    background: hsl(var(--surface-quiet) / 0.85);
+    padding: 0.9rem 1rem;
+    color: hsl(var(--foreground));
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.42);
+  }
+
+  .field::placeholder {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .field:focus-visible {
+    outline: none;
+    border-color: hsl(var(--primary) / 0.7);
+    box-shadow:
+      0 0 0 4px hsl(var(--primary) / 0.12),
+      inset 0 1px 0 hsl(0 0% 100% / 0.42);
+  }
+
+  .grid-lines {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .grid-lines::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, hsl(var(--border) / 0.16) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.14) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 92%);
+    pointer-events: none;
   }
 }

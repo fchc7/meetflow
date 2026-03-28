@@ -1,4 +1,14 @@
+import type { Meeting, Room } from '@meetflow/shared'
+
 const BASE = '/api'
+
+export interface AppUser {
+  id: string
+  name: string
+  email: string
+  role: 'admin' | 'host' | 'participant'
+  createdAt?: string
+}
 
 function getToken(): string | null {
   return localStorage.getItem('token')
@@ -53,14 +63,28 @@ export async function login(data: { email: string; password: string }) {
   return result
 }
 
-export async function getRooms(page?: number, limit?: number) {
+export async function getRooms(
+  optionsOrPage?: number | {
+  page?: number
+  limit?: number
+  available?: boolean
+  date?: string
+  },
+  legacyLimit?: number,
+) {
+  const options = typeof optionsOrPage === 'number'
+    ? { page: optionsOrPage, limit: legacyLimit }
+    : optionsOrPage
+
   const params = new URLSearchParams()
-  if (page !== undefined) params.set('page', String(page))
-  if (limit !== undefined) params.set('limit', String(limit))
+  if (options?.page !== undefined) params.set('page', String(options.page))
+  if (options?.limit !== undefined) params.set('limit', String(options.limit))
+  if (options?.available) params.set('available', 'true')
+  if (options?.date) params.set('date', options.date)
   const qs = params.toString()
   const path = qs ? `/rooms?${qs}` : '/rooms'
   const res = await authFetch(path)
-  return parseResponse<unknown[]>(res)
+  return parseResponse<Room[]>(res)
 }
 
 export async function getRoom(id: string) {
@@ -91,15 +115,17 @@ export async function getMeetings(params?: {
   status?: string
   page?: number
   limit?: number
+  date?: string
 }) {
   const sp = new URLSearchParams()
   if (params?.status) sp.set('status', params.status)
   if (params?.page !== undefined) sp.set('page', String(params.page))
   if (params?.limit !== undefined) sp.set('limit', String(params.limit))
+  if (params?.date) sp.set('date', params.date)
   const qs = sp.toString()
   const path = qs ? `/meetings?${qs}` : '/meetings'
   const res = await authFetch(path)
-  return parseResponse<unknown[]>(res)
+  return parseResponse<Meeting[]>(res)
 }
 
 export async function getMeeting(id: string) {
@@ -127,7 +153,7 @@ export async function createMeeting(data: {
 
 export async function updateMeeting(id: string, data: Record<string, unknown>) {
   const res = await authFetch(`/meetings/${id}`, {
-    method: 'PATCH',
+    method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
@@ -150,12 +176,12 @@ export async function confirmMeeting(id: string) {
 
 export async function getUsers() {
   const res = await authFetch('/users')
-  return parseResponse<unknown[]>(res)
+  return parseResponse<AppUser[]>(res)
 }
 
 export async function getUser(id: string) {
   const res = await authFetch(`/users/${id}`)
-  return parseResponse<unknown>(res)
+  return parseResponse<{ user: AppUser }>(res)
 }
 
 export async function updateUser(

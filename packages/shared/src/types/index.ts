@@ -1,6 +1,6 @@
-export type { Meeting, CreateMeetingInput } from './meeting.schema.js'
-export type { Room } from './room.schema.js'
-export type { User } from './user.schema.js'
+export type { Meeting, CreateMeetingInput } from '../schemas/meeting.schema.js'
+export type { Room } from '../schemas/room.schema.js'
+export type { User } from '../schemas/user.schema.js'
 
 export interface MeetingParticipant {
   meetingId: string
@@ -23,6 +23,7 @@ export interface Attachment {
   meetingId: string
   fileName: string
   fileSize: number
+  mimeType?: string | null
   url: string
   uploadedAt: string
 }

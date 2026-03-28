@@ -28,6 +28,8 @@ export const meetings = sqliteTable('meetings', {
   roomId: text('room_id').notNull().references(() => rooms.id),
   hostId: text('host_id').notNull().references(() => users.id),
   recurrence: text('recurrence', { enum: ['none', 'daily', 'weekly', 'monthly'] }).notNull().default('none'),
+  recurrenceEndsAt: text('recurrence_ends_at'),
+  seriesId: text('series_id'),
   status: text('status', { enum: ['scheduled', 'cancelled', 'completed'] }).notNull().default('scheduled'),
   createdAt: text('created_at').notNull().$defaultFn(() => new Date().toISOString()),
   updatedAt: text('updated_at').notNull().$defaultFn(() => new Date().toISOString()),
@@ -54,6 +56,7 @@ export const attachments = sqliteTable('attachments', {
   meetingId: text('meeting_id').notNull().references(() => meetings.id),
   fileName: text('file_name').notNull(),
   fileSize: integer('file_size').notNull(),
+  mimeType: text('mime_type'),
   url: text('url').notNull(),
   uploadedAt: text('uploaded_at').notNull().$defaultFn(() => new Date().toISOString()),
 })

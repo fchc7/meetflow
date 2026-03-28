@@ -1,26 +1,26 @@
 import 'dotenv/config'
-import Database from 'better-sqlite3'
 import crypto from 'node:crypto'
+import { db } from './db/index.js'
+import { users } from './db/schema.js'
+import { hashPassword } from './services/password.js'
 
-function hashPassword(password: string): string {
-  return crypto.createHash('sha256').update(password).digest('hex')
-}
-
-const sqlite = new Database('meetflow.db')
-
-const users = [
-  { id: crypto.randomUUID(), name: 'Admin', email: 'admin@meetflow.com', role: 'admin', password: 'admin123' },
-  { id: crypto.randomUUID(), name: 'Host', email: 'host@meetflow.com', role: 'host', password: 'host123' },
-  { id: crypto.randomUUID(), name: 'User', email: 'user@meetflow.com', role: 'participant', password: 'user123' },
+const seedUsers = [
+  { id: crypto.randomUUID(), name: 'Admin', email: 'admin@meetflow.com', role: 'admin' as const, password: 'admin123' },
+  { id: crypto.randomUUID(), name: 'Host', email: 'host@meetflow.com', role: 'host' as const, password: 'host123' },
+  { id: crypto.randomUUID(), name: 'User', email: 'user@meetflow.com', role: 'participant' as const, password: 'user123' },
 ]
 
-const insert = sqlite.prepare(
-  `INSERT OR IGNORE INTO users (id, name, email, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?, ?)`
-)
+for (const user of seedUsers) {
+  db.insert(users).values({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    passwordHash: await hashPassword(user.password),
+    role: user.role,
+    createdAt: new Date().toISOString(),
+  }).onConflictDoNothing({
+    target: users.email,
+  }).run()
 
-for (const u of users) {
-  insert.run(u.id, u.name, u.email, hashPassword(u.password), u.role, new Date().toISOString())
-  console.log(`${u.role}: ${u.email} / ${u.password}`)
+  console.log(`${user.role}: ${user.email} / ${user.password}`)
 }
-
-sqlite.close()

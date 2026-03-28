@@ -59,24 +59,32 @@ describe('User Routes', () => {
       expect(res.status).toBe(401)
     })
 
-    it('returns 403 for non-admin users', async () => {
+    it('allows participant users to list users', async () => {
       const { app, db } = createApp()
       await seedUsers(db)
       const token = await createToken('user-1', 'participant')
       const res = await app.request('/api/users', {
         headers: { Authorization: `Bearer ${token}` },
       })
-      expect(res.status).toBe(403)
+      expect(res.status).toBe(200)
+      const body = await res.json()
+      expect(body.data).toBeDefined()
+      expect(body.data.length).toBeGreaterThan(0)
     })
 
-    it('returns 403 for host users', async () => {
+    it('allows host users to list users without password hashes', async () => {
       const { app, db } = createApp()
       await seedUsers(db)
       const token = await createToken('user-2', 'host')
       const res = await app.request('/api/users', {
         headers: { Authorization: `Bearer ${token}` },
       })
-      expect(res.status).toBe(403)
+      expect(res.status).toBe(200)
+      const body = await res.json()
+      expect(body.data).toHaveLength(3)
+      for (const user of body.data) {
+        expect(user).not.toHaveProperty('passwordHash')
+      }
     })
 
     it('returns list of users without password hashes for admin', async () => {

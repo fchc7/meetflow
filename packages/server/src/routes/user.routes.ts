@@ -6,6 +6,7 @@ import { authMiddleware } from '../middleware/auth.js'
 import type * as schema from '../db/schema.js'
 
 type Db = BetterSQLite3Database<typeof schema>
+type Env = { Variables: { userId: string; userRole: typeof validRoles[number] } }
 
 function stripPassword(user: typeof users.$inferSelect) {
   const { passwordHash, ...rest } = user
@@ -15,22 +16,18 @@ function stripPassword(user: typeof users.$inferSelect) {
 const validRoles = ['admin', 'host', 'participant'] as const
 
 export function createUserRoutes(db: Db) {
-  const router = new Hono()
+  const router = new Hono<Env>()
 
   router.use('*', authMiddleware)
 
   router.get('/', async (c) => {
-    const userRole = c.get('userRole') as string
-    if (userRole !== 'admin') {
-      return c.json({ error: 'Forbidden' }, 403)
-    }
     const allUsers = await db.select().from(users).all()
     return c.json({ data: allUsers.map(stripPassword) })
   })
 
   router.get('/:id', async (c) => {
-    const userId = c.get('userId') as string
-    const userRole = c.get('userRole') as string
+    const userId = c.get('userId')
+    const userRole = c.get('userRole')
     const targetId = c.req.param('id')
 
     if (userRole !== 'admin' && userId !== targetId) {
@@ -46,8 +43,8 @@ export function createUserRoutes(db: Db) {
   })
 
   router.patch('/:id', async (c) => {
-    const userId = c.get('userId') as string
-    const userRole = c.get('userRole') as string
+    const userId = c.get('userId')
+    const userRole = c.get('userRole')
     const targetId = c.req.param('id')
 
     if (userRole !== 'admin' && userId !== targetId) {
@@ -77,7 +74,7 @@ export function createUserRoutes(db: Db) {
     }
 
     if (role !== undefined) {
-      if (!validRoles.includes(role)) {
+      if (!isValidRole(role)) {
         return c.json({ error: 'Invalid role' }, 400)
       }
       if (userRole !== 'admin') {
@@ -102,4 +99,8 @@ export function createUserRoutes(db: Db) {
   })
 
   return router
+}
+
+function isValidRole(role: unknown): role is typeof validRoles[number] {
+  return typeof role === 'string' && validRoles.includes(role as typeof validRoles[number])
 }

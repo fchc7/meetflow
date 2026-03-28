@@ -10,6 +10,8 @@ export const meetingSchema = z.object({
   roomId: z.string().uuid(),
   hostId: z.string().uuid(),
   recurrence: z.enum(['none', 'daily', 'weekly', 'monthly']).default('none'),
+  recurrenceEndsAt: z.string().datetime().optional().nullable(),
+  seriesId: z.string().uuid().optional().nullable(),
   status: z.enum(['scheduled', 'cancelled', 'completed']).default('scheduled'),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
@@ -24,7 +26,8 @@ export const createMeetingSchema = meetingSchema.pick({
   roomId: true,
   recurrence: true,
 }).extend({
-  participantIds: z.array(z.string().uuid()).min(1),
+  recurrenceEndsAt: z.string().datetime().optional(),
+  participantIds: z.array(z.string().uuid()).default([]),
 })
 
 export type Meeting = z.infer<typeof meetingSchema>
