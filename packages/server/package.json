@@ -1,0 +1,40 @@
+{
+  "name": "@meetflow/server",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/serve.ts",
+    "seed": "tsx src/seed.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.0",
+    "@hono/zod-validator": "^0.4.0",
+    "@meetflow/shared": "workspace:*",
+    "better-sqlite3": "^11.7.0",
+    "dotenv": "^17.3.1",
+    "drizzle-orm": "^0.38.0",
+    "hono": "^4.7.0",
+    "jose": "^6.0.0",
+    "node-cron": "^3.0.3",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
+    "@types/node": "^22.10.0",
+    "@types/node-cron": "^3.0.11",
+    "drizzle-kit": "^0.30.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

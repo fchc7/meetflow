@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "skills": {
+    "adapt": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "fb7cca7602be381b7b486e731fdcd480335cbb9b925e1911276f5bb9352c6b2f"
+    },
+    "animate": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "b00cb71343fa7e987489ad330e3dd3e504ff893b9ddd2b30cacea93691b78e46"
+    },
+    "audit": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "eb9109e542194f8711cffce23095ef5da2deb4ed0b23f59c07e912e3931f1e17"
+    },
+    "better-icons": {
+      "source": "better-auth/better-icons",
+      "sourceType": "github",
+      "computedHash": "ec859a92bcb6fef5ae1fe8ab1d4b10c1d76fae7a809101c9bce1230944af1b0e"
+    },
+    "critique": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "59d3facaee0d7c969f23e938c35239183d3fdd9befff526908585e55afa3a9dd"
+    },
+    "harden": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "f8ce420b3c78b90707704122264da76514c793ac0e12fb9540ace68d257c231c"
+    },
+    "normalize": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "281b7f9e590e252a6aec3f5f83c5ca548c91e8bccb3fd6eee4cc7d5be0becb4d"
+    },
+    "optimize": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "f7adc2a2e540a590978b567d82985062bfada83385f5ad5d50b13a127cdc96d6"
+    },
+    "polish": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "33a8b5195481719e954b71762de56faaabc68c479602673894e0d0e47336756b"
+    },
+    "quieter": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "6066e73875e4770e624641355cc04662ce75d2b1d1a3673e24dcbd0ec8936297"
+    }
+  }
+}
